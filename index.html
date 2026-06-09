@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학술 논증문 글쓰기 코칭 센터 | Academic Argument Coach</title>
+    <!-- Google Fonts 및 Pretendard 적용 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 헤더 영역 -->
+        <header class="app-header">
+            <div class="header-logo">
+                <!-- 채점 결과 리포트에서 타이틀 바로 왼쪽에 렌더링될 뒤로가기 화살표 버튼 -->
+                <button type="button" id="btn-back-to-input-top" class="btn-circle-back header-back-btn" title="처음 글 입력 화면으로 돌아가기" style="display: none;">
+                    ←
+                </button>
+                <span class="logo-icon">🎓</span>
+                <h1>학술 논증문 <span class="accent-text">글쓰기 코칭 센터</span></h1>
+            </div>
+            <p class="header-subtitle">대학생들의 논리적 완성도와 역동적인 문체 표현을 돕는 정밀 글쓰기 피드백 서비스</p>
+        </header>
+        <!-- 메인 콘텐츠 영역 -->
+        <main class="app-content-full">
+            
+            <!-- VIEW 1: 논증문 초안 작성 및 입력 화면 -->
+            <section id="input-view" class="view-section card">
+                <div class="panel-header">
+                    <h2>📝 논증문 초안 작성 및 코칭 신청</h2>
+                    <div class="example-buttons">
+                        <button type="button" id="btn-load-ai" class="btn btn-secondary btn-sm">❌ 보완이 필요한 논증문 예시</button>
+                        <button type="button" id="btn-load-student" class="btn btn-secondary btn-sm">✅ 우수한 논증문 예시</button>
+                        <button type="button" id="btn-load-random-student" class="btn btn-secondary btn-sm">🎲 진짜 학생 글 무작위 불러오기</button>
+                    </div>
+                </div>
+                
+                <div class="textarea-wrapper">
+                    <textarea id="essay-input" placeholder="여기에 작성 중인 학술 논증문 초안을 입력해 주세요. (최소 2문장, 공백 제외 30자 이상)..." spellcheck="false"></textarea>
+                    <!-- 실시간 텍스트 메트릭 -->
+                    <div class="textarea-status">
+                        <span id="char-count-with-space">공백 포함: 0자</span>
+                        <span id="char-count-no-space">공백 제외: 0자</span>
+                    </div>
+                </div>
+                <button type="button" id="btn-analyze" class="btn btn-primary btn-block">
+                    <span class="btn-text">🔍 논증문 정밀 분석 및 글쓰기 코칭 받기</span>
+                    <div class="spinner" id="analyze-spinner" style="display: none;"></div>
+                </button>
+                <!-- 학술 글쓰기 퀵 팁 가이드 -->
+                <div class="quick-tips mt-4">
+                    <h3>💡 좋은 학술 논증문을 쓰기 위한 핵심 코칭 팁</h3>
+                    <div class="tips-grid">
+                        <div class="tip-box">
+                            <h4>[내용 영역] 신중한 완화 표현</h4>
+                            <p>'반드시', '무조건' 같은 극단적인 주장 대신 '~할 여지가 크다', '~로 해석된다' 같은 완화 표현을 통해 논리의 예외 가능성과 반론을 열어두세요.</p>
+                        </div>
+                        <div class="tip-box">
+                            <h4>[조직 영역] 유기적 삼단 구조</h4>
+                            <p>서론(문제 상황 제기) - 본론(하위 주장 및 객관적 인용 근거) - 결론(주장 재강조 및 제언) 구조를 유기적인 문장 연결어로 엮어 주세요.</p>
+                        </div>
+                        <div class="tip-box">
+                            <h4>[표현 영역] 문장 호흡의 다양성</h4>
+                            <p>인공적인 문장들처럼 모든 문장의 어절 수가 균일하면 독자가 피로해집니다. 단문과 복문을 입체적으로 섞어 문장의 역동성을 확보하세요.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- VIEW 2: 완전 전환형 채점 결과 리포트 화면 (초기엔 숨김) -->
+            <section id="report-view" class="view-section" style="display: none;">
+                
+                <!-- 상단 컨트롤러 및 타이틀 -->
+                <div class="report-control-bar card mb-4">
+                    <div class="report-left-space"></div>
+                    <div class="report-title-area">
+                        <span class="report-title-top">정밀 코칭 리포트</span>
+                        <h2 id="essay-grade-title">학술적 가치가 높은 자연스러운 논증문</h2>
+                    </div>
+                    <div class="grade-display">
+                        <span class="grade-label">학술 평점</span>
+                        <div id="grade-badge" class="grade-badge">A-</div>
+                    </div>
+                </div>
+                <!-- 3대 영역 평균 점수 카드 대시보드 -->
+                <div class="domain-scores-grid mb-4">
+                    <!-- 종합 평균 -->
+                    <div class="domain-card card-total">
+                        <span class="domain-icon">🏆</span>
+                        <div class="domain-info">
+                            <h3>종합 논증문 점수</h3>
+                            <div class="domain-score-text">
+                                <span class="d-score-num" id="domain-avg-total">4.20</span>
+                                <span class="d-score-max">/ 5.0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 내용 영역 -->
+                    <div class="domain-card card-content">
+                        <span class="domain-icon">💡</span>
+                        <div class="domain-info">
+                            <h3>내용 영역 평균</h3>
+                            <div class="domain-score-text">
+                                <span class="d-score-num" id="domain-avg-content">4.12</span>
+                                <span class="d-score-max">/ 5.0</span>
+                            </div>
+                            <span class="domain-tag text-content">문제제기 & 신중논증</span>
+                        </div>
+                    </div>
+                    <!-- 조직 영역 -->
+                    <div class="domain-card card-org">
+                        <span class="domain-icon">🕸️</span>
+                        <div class="domain-info">
+                            <h3>조직 영역 평균</h3>
+                            <div class="domain-score-text">
+                                <span class="d-score-num" id="domain-avg-org">4.30</span>
+                                <span class="d-score-max">/ 5.0</span>
+                            </div>
+                            <span class="domain-tag text-org">구성 & 문단 완결성</span>
+                        </div>
+                    </div>
+                    <!-- 표현 영역 -->
+                    <div class="domain-card card-expr">
+                        <span class="domain-icon">✨</span>
+                        <div class="domain-info">
+                            <h3>표현 영역 평균</h3>
+                            <div class="domain-score-text">
+                                <span class="d-score-num" id="domain-avg-expr">3.95</span>
+                                <span class="d-score-max">/ 5.0</span>
+                            </div>
+                            <span class="domain-tag text-expr">문장 호흡 & 어문 규범</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- 정밀 진단 경고 가이드 및 4대 계량 지표 -->
+                <div class="diagnostics-grid mb-4">
+                    <!-- 문체 활력도 및 문장 표현 경직도 진단 결과 가이드 (AI 특징 감지 시 경고 추가 렌더링 영역) -->
+                    <div class="warning-panel card" id="ai-warning-panel">
+                        <h3 class="warning-title">📊 문체 분석 결과</h3>
+                        <div class="warning-items" id="warning-items-list">
+                            <!-- 문장 표현 경직도 감지 안내 카드 -->
+                            <div class="warning-card warning-danger" id="warn-ai-critical-card" style="display: none;">
+                                <div class="warn-icon">📝</div>
+                                <div class="warn-body">
+                                    <div class="warn-title-with-tooltip">
+                                        <h4>문장 표현 경직도 높음 (보완 권장)</h4>
+                                        <span class="info-icon" data-tooltip="문장 길이의 변화 폭(표준편차)과 어휘 배치 방식을 진단하여, 문장 표현이 단조롭거나 기계적으로 획일화되지 않고 학생 고유의 역동적인 생동감이 살아있는지 분석합니다.">i</span>
+                                    </div>
+                                    <p id="warn-ai-critical-text">문장 구조의 다양성을 조금 더 높이면 훨씬 생동감 있는 나만의 글이 될 수 있어요! 단문과 복문을 입체적으로 섞어 호흡을 다채롭게 해보세요.</p>
+                                </div>
+                            </div>
+                            <!-- 문장 길이 표준편차 경고 -->
+                            <div class="warning-card warning-danger" id="warn-sentence-card" style="display: none;">
+                                <div class="warn-icon">📉</div>
+                                <div class="warn-body">
+                                    <div class="warn-title-with-tooltip">
+                                        <h4>문장 호흡의 보완 권장</h4>
+                                        <span class="info-icon" data-tooltip="문장 길이의 변화 폭(표준편차)이 우수 기준인 5.5에 미치지 못하여 문장 구조가 단조로운 상태를 나타냅니다.">i</span>
+                                    </div>
+                                    <p id="warn-sentence-text">현재 문장들의 길이와 구조가 다소 일정하여, 독자에게 기계적인 인상을 줄 수 있습니다. 생각의 흐름에 맞춰 짧은 문장과 긴 문장을 다채롭게 섞어 쓰면 글의 활력이 살아납니다.</p>
+                                </div>
+                            </div>
+                            <!-- 어휘 다양성 경고 -->
+                            <div class="warning-card warning-warning" id="warn-word-card" style="display: none;">
+                                <div class="warn-icon">📚</div>
+                                <div class="warn-body">
+                                    <div class="warn-title-with-tooltip">
+                                        <h4>어휘 순환 흐름의 개선 권장</h4>
+                                        <span class="info-icon" data-tooltip="사전식 어휘 나열 비율이 높아 주제어가 흐름 속에서 자연스럽게 순환되기보다 기계적인 구성에 가깝습니다.">i</span>
+                                    </div>
+                                    <p id="warn-word-text">단어들이 다채롭게 사용되었으나 사전식 나열에 가깝습니다. 핵심 주제 키워드를 자연스럽게 맥락 속에서 반복하며 일관된 방향으로 전개해 보세요.</p>
+                                </div>
+                            </div>
+                            <!-- 정상 판정 시 기본 안내 -->
+                            <div class="warning-card warning-success" id="warn-normal-card">
+                                <div class="warn-icon">🌱</div>
+                                <div class="warn-body">
+                                    <div class="warn-title-with-tooltip">
+                                        <h4 id="warn-normal-title">문체 활력도 우수 (생동감 있는 흐름)</h4>
+                                        <span class="info-icon" data-tooltip="문장 길이의 변화 폭(표준편차)과 어휘 배치 방식을 진단하여, 문장 표현이 단조롭거나 기계적으로 획일화되지 않고 학생 고유의 역동적인 생동감이 살아있는지 분석합니다.">i</span>
+                                    </div>
+                                    <p id="warn-normal-text">글의 문장 길이 편차가 풍부하고 자연스러워 생동감과 활력이 넘칩니다! 나만의 개성이 조화롭게 어우러진 훌륭한 문맥 흐름입니다.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 4대 계량 문체 지표 현황판 (i 아이콘 및 툴팁 기능 구현) -->
+                    <div class="style-metrics card">
+                        <div class="style-metrics-title-wrapper">
+                            <h3>📊 4대 계량 문체 지표 판정</h3>
+                            <span class="info-icon info-icon-large" data-tooltip="작성된 논증문의 계량적 특징을 실측 데이터 임계치와 비교하여, 인간 고유의 문체적 역동성이 살아있는지 혹은 생성형 AI 특유의 정형화된 패턴이 나타나는지 종합 진단하는 구간입니다.">i</span>
+                        </div>
+                        <div class="style-metrics-grid">
+                            <!-- 문장 표준편차 -->
+                            <div class="style-metric-card">
+                                <div class="sm-header">
+                                    <div class="sm-label-wrapper">
+                                        <h4>문장 길이 표준편차</h4>
+                                        <span class="info-icon" data-tooltip="문장별 어절 수의 변화 폭을 분석합니다. AI는 문장 구조가 정형화되어 이 값이 낮게 나타납니다.">i</span>
+                                    </div>
+                                    <span class="sm-value" id="val-std-len">5.82</span>
+                                </div>
+                                <div class="sm-gauge-wrapper">
+                                    <div class="sm-gauge-bar" id="gauge-std-len"></div>
+                                </div>
+                                <p class="sm-desc">우수 기준: 5.5 이상 | AI 평균: 3.8 내외</p>
+                            </div>
+                            <!-- 어절 다양성 -->
+                            <div class="style-metric-card">
+                                <div class="sm-header">
+                                    <div class="sm-label-wrapper">
+                                        <h4>어절 다양성</h4>
+                                        <span class="info-icon" data-tooltip="글 전체에서 중복 없이 사용된 고유 어절의 비율입니다. AI는 인위적으로 전문 어휘만 다채롭게 나열하여 이 값이 과도하게 높습니다.">i</span>
+                                    </div>
+                                    <span class="sm-value" id="val-word-ttr">0.762</span>
+                                </div>
+                                <div class="sm-gauge-wrapper">
+                                    <div class="sm-gauge-bar" id="gauge-word-ttr"></div>
+                                </div>
+                                <p class="sm-desc">우수 기준: 0.75~0.78 | AI 평균: 0.82 이상</p>
+                            </div>
+                            <!-- 형태소 다양성 -->
+                            <div class="style-metric-card">
+                                <div class="sm-header">
+                                    <div class="sm-label-wrapper">
+                                        <h4>형태소 다양성</h4>
+                                        <span class="info-icon" data-tooltip="형태소 분석기를 통해 분리된 고유 형태소의 비율을 측정하며, 글 전반의 어휘 사용 풍부도를 심층 진단합니다.">i</span>
+                                    </div>
+                                    <span class="sm-value" id="val-morph-ttr">0.584</span>
+                                </div>
+                                <div class="sm-gauge-wrapper">
+                                    <div class="sm-gauge-bar" id="gauge-morph-ttr"></div>
+                                </div>
+                                <p class="sm-desc">KoNLPy 형태소 다양성 지표 (Okt 연동)</p>
+                            </div>
+                            <!-- 완화 표현 밀도 -->
+                            <div class="style-metric-card">
+                                <div class="sm-header">
+                                    <div class="sm-label-wrapper">
+                                        <h4>완화 표현 밀도</h4>
+                                        <span class="info-icon" data-tooltip="1,000어절당 신중한 어조(~수 있다, ~보인다)의 사용 빈도입니다. 지나친 단정을 피하고 사려 깊게 주장을 전개하는지 확인합니다.">i</span>
+                                    </div>
+                                    <span class="sm-value" id="val-hedge">8.12</span>
+                                </div>
+                                <div class="sm-gauge-wrapper">
+                                    <div class="sm-gauge-bar" id="gauge-hedge"></div>
+                                </div>
+                                <p class="sm-desc">최적 기준: 8.0 내외 | AI 평균: 8.97 (획일적 남용)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 9대 채점 시각 대시보드 Grid -->
+                <div class="dashboard-grid mb-4">
+                    <!-- 좌측: SVG Radar Chart (종합 진단망 타이틀 명칭 수정) -->
+                    <div class="chart-box card">
+                        <h3>🕸️ 3대 핵심 영역 종합 진단망</h3>
+                        <div class="radar-chart-container">
+                            <svg id="radar-chart" viewBox="0 0 400 400" width="100%" height="100%"></svg>
+                        </div>
+                    </div>
+                    <!-- 우측: 3대 대분류 가로형 바 그래프 -->
+                    <div class="bar-chart-box card">
+                        <h3>📈 영역별 상세 채점</h3>
+                        <p class="bar-chart-guide">세부 영역 부분을 클릭하시면 피드백을 확인하실 수 있습니다.</p>
+                        <div class="domain-bar-sections">
+                            
+                            <!-- 내용 영역 그룹 -->
+                            <div class="domain-section">
+                                <h4 class="domain-section-title title-content">💡 내용 영역 (주제 의식 & 논증의 완화)</h4>
+                                <div class="bar-chart-container" id="bar-list-content">
+                                    <!-- JS에서 내용 하위 5개 동적 렌더링 -->
+                                </div>
+                            </div>
+                            
+                            <!-- 조직 영역 그룹 -->
+                            <div class="domain-section mt-4">
+                                <h4 class="domain-section-title title-org">🕸️ 조직 영역 (구조적 통일성 & 정합성)</h4>
+                                <div class="bar-chart-container" id="bar-list-org">
+                                    <!-- JS에서 조직 하위 2개 동적 렌더링 -->
+                                </div>
+                            </div>
+                            
+                            <!-- 표현 영역 그룹 -->
+                            <div class="domain-section mt-4">
+                                <h4 class="domain-section-title title-expr">✨ 표현 영역 (문장의 다양성 & 규범 장르)</h4>
+                                <div class="bar-chart-container" id="bar-list-expr">
+                                    <!-- JS에서 표현 하위 2개 동적 렌더링 -->
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+                <!-- 문단별 상세 첨삭 및 문맥 하이라이터 -->
+                <div class="correction-panel card mb-4">
+                    <div class="panel-header">
+                        <h3>🔍 첨삭 지도 및 문장 표현 교정기</h3>
+                        <div class="highlight-legend">
+                            <span class="legend-item legend-translation"><span class="color-dot"></span>AI 번역투</span>
+                            <span class="legend-item legend-assertion"><span class="color-dot"></span>지나친 단정</span>
+                            <span class="legend-item legend-style"><span class="color-dot"></span>비학술 구어체</span>
+                        </div>
+                    </div>
+                    <p class="correction-intro">논증문 속 아래 어휘들에 마우스를 올리거나 터치하여 자연스럽고 부드러운 학술적 대체 표현을 확인해 보세요.</p>
+                    <div class="highlighted-viewer" id="highlighted-text-viewer"></div>
+                </div>
+                <!-- 3대 영역별 상세 평가 코멘트 및 솔루션 카드 리스트 -->
+                <div class="evaluation-detail card mb-4">
+                    <h3>📂 3대 영역별 피드백 및 글쓰기 솔루션</h3>
+                    <div class="domain-feedback-container">
+                        
+                        <!-- 내용 피드백 섹션 -->
+                        <div class="domain-feedback-section section-content mb-4">
+                            <div class="domain-feedback-header header-content">
+                                <span>💡</span>
+                                <h4>[내용 영역] 상세 진단 가이드</h4>
+                            </div>
+                            <div class="evaluation-list" id="eval-list-content">
+                                <!-- JS 동적 삽입 -->
+                            </div>
+                        </div>
+                        <!-- 조직 피드백 섹션 -->
+                        <div class="domain-feedback-section section-org mb-4">
+                            <div class="domain-feedback-header header-org">
+                                <span>🕸️</span>
+                                <h4>[조직 영역] 상세 진단 가이드</h4>
+                            </div>
+                            <div class="evaluation-list" id="eval-list-org">
+                                <!-- JS 동적 삽입 -->
+                            </div>
+                        </div>
+                        <!-- 표현 피드백 섹션 -->
+                        <div class="domain-feedback-section section-expr">
+                            <div class="domain-feedback-header header-expr">
+                                <span>✨</span>
+                                <h4>[표현 영역] 상세 진단 가이드</h4>
+                            </div>
+                            <div class="evaluation-list" id="eval-list-expr">
+                                <!-- JS 동적 삽입 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 1. 하단 대형 복귀 버튼 추가 및 위치 조정 -->
+                <div class="report-footer-bar">
+                    <button type="button" id="btn-back-to-input-large" class="btn btn-primary btn-block btn-lg">
+                        ✏️ 논증문 수정하러 돌아가기
+                    </button>
+                </div>
+            </section>
+        </main>
+        
+        <!-- 푸터 -->
+        <footer class="app-footer-bar">
+            <p>© 2026 학술 논증문 글쓰기 코칭 센터. 대학생들의 주체적이고 깊이 있는 학술 글쓰기를 지향합니다.</p>
+        </footer>
+    </div>
+    <!-- 예시 논증문 팝업 모달 -->
+    <div id="example-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content card">
+            <div class="modal-header-bar">
+                <h3 id="modal-title">보완이 필요한 논증문 예시</h3>
+                <button type="button" id="btn-modal-x" class="modal-x-btn">✕</button>
+            </div>
+            
+            <div class="modal-body-layout">
+                <!-- 좌측: 논증문 본문 -->
+                <div class="modal-text-panel">
+                    <h4>📝 논증문 초안 본문</h4>
+                    <div class="modal-scroll-box">
+                        <pre id="modal-essay-text"></pre>
+                    </div>
+                </div>
+                
+                <!-- 우측: 분석 정보 및 코칭 해설 -->
+                <div class="modal-feedback-panel">
+                    <h4>💡 정밀 지표 기반 분석 & 해설</h4>
+                    <div class="modal-metric-row">
+                        <span class="modal-metric-badge" id="modal-metric-std">문장 표준편차: -</span>
+                        <span class="modal-metric-badge" id="modal-metric-ttr">어절 다양성: -</span>
+                    </div>
+                    <div class="modal-coaching-box" id="modal-explanation-text">
+                        <!-- 코칭 해설 주입 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer-bar">
+                <button type="button" id="btn-modal-load" class="btn btn-primary">📖 이 초안 불러와서 고쳐보기</button>
+                <button type="button" id="btn-modal-close" class="btn btn-secondary">닫기</button>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
